@@ -24,27 +24,71 @@ const mqttConfig = {
     clientId: "node-backend-client",
     username: "ivanov",
     password: "ivanivanov",
-    port: "1883"
+    port: "8883",
+    host: "31d830ed6f1642a2a73ae993e116f1bf.s2.eu.hivemq.cloud",
+    protocol: "mqtts"
 };
+
+const mqttConfigHttp = {
+    clientId: "node-backend-client",
+    username: "ivanov",
+    password: "ivanivanov",
+    port: "1883"
+}
 
 const firebaseApp = initializeApp(firebaseConfig);
 
-const mqttClient = mqtt.connect("mqtt://vfc64260-internet-facing-376ebf692d75cbe3.elb.us-east-1.amazonaws.com", mqttConfig);
+const mqttClient = mqtt.connect(mqttConfig);
+const mqttClientHttp = mqtt.connect("mqtt://vfc64260-internet-facing-376ebf692d75cbe3.elb.us-east-1.amazonaws.com", mqttConfigHttp);
 
 mqttClient.on('connect', () => {
     console.log("connected");
 });
 
-mqttClient.on('message', async (topic, payload) => {
+mqttClientHttp.on('connect', () => {
+    console.log("http mqtt connected");
+})
+
+mqttClientHttp.on('message', async (topic, payload) => {
     switch(topic) {
         case topics.RFID_Check:
             await RFIDHandleCheck(payload);
             break;
+        case topics.DHT_Send:
+        case topics.DoorStateTopic:
+            mqttClient.publish(topic, payload);
+            break;
+        
     }
 })
 
-mqttClient.subscribe(topics.RFID_Check, () => {
+mqttClient.on('message', (topic, payload) => {
+    switch(topic) {
+        case topics.LedStateTopic:
+        case topics.LockStateTopic:
+            mqttClientHttp.publish(topic, payload);
+            break;
+    }
+})
+
+mqttClientHttp.subscribe(topics.RFID_Check, () => {
     console.log("subscribed to", topics.RFID_Check);
+})
+
+mqttClientHttp.subscribe(topics.DHT_Send, () => {
+    console.log("subscribed to", topics.DHT_Send);
+})
+
+mqttClientHttp.subscribe(topics.DoorStateTopic, () => {
+    console.log("subscribed to", topics.DoorStateTopic);
+})
+
+mqttClient.subscribe(topics.LockStateTopic, () => {
+    console.log("subscribed to", topics.LockStateTopic);
+})
+
+mqttClient.subscribe(topics.LedStateTopic, () => {
+    console.log("subscribed to", topics.LedStateTopic);
 })
 
 var dbContext = new DatabaseInteraction(firebaseApp);
@@ -85,7 +129,7 @@ async function RFIDHandleCheck(payload) {
         dbContext.SetChildArrayNewItem("EnterHistory", newHistoryRecord);
     }
 
-    mqttClient.publish(topics.RFID_Check_Result,
+    mqttClientHttp.publish(topics.RFID_Check_Result,
         compareResult ? "1" : "0");
 };
 
