@@ -131,6 +131,9 @@ async function RFIDHandleCheck(payload) {
 
     mqttClientHttp.publish(topics.RFID_Check_Result,
         compareResult ? "1" : "0");
+
+    mqttClient.publish(topics.RFID_Check_Result,
+        compareResult ? "1" : "0");
 };
 
 function GetDateNow() {
