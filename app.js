@@ -29,8 +29,7 @@ const mqttConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 
-const mqttClient = mqtt.connect("mqtt://j9f09aa1-internet-facing-ef1d133022690295.elb.us-east-1.amazonaws.com", mqttConfig);
-
+const mqttClient = mqtt.connect("mqtt://vfc64260-internet-facing-376ebf692d75cbe3.elb.us-east-1.amazonaws.com", mqttConfig);
 
 mqttClient.on('connect', () => {
     console.log("connected");
@@ -89,7 +88,6 @@ async function RFIDHandleCheck(payload) {
     mqttClient.publish(topics.RFID_Check_Result,
         compareResult ? "1" : "0");
 };
-
 
 function GetDateNow() {
     var date = new Date();
