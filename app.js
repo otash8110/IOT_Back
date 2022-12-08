@@ -138,7 +138,11 @@ async function RFIDHandleCheck(payload) {
 
 function GetDateNow() {
     var date = new Date();
-    var currentDate = date.toLocaleDateString() + " " + date.toLocaleTimeString();
-
-    return currentDate;
+    var formatedDate = new Intl.DateTimeFormat('en-US', {
+        year: 'numeric', month: 'numeric', day: 'numeric',
+        hour: 'numeric', minute: 'numeric', second: 'numeric',
+        hour12: false,
+        timeZone: 'Asia/Tashkent',
+    })
+    return formatedDate.format(date);
 };
